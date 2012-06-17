@@ -1,74 +1,60 @@
 
+
+var request = require('request')
+	,  _ = require('underscore')
+	, lastGet = new Date(2000,1,1)
+	, gistListUrl = 'https://api.github.com/users/adamchester/gists'
+	, adamchesterUrl = 'https://gist.github.com/adamchester'
+	, viewModelCache = undefined;
+
 /*
  * GET home page.
  */
-
-var request = require('request'),
-  _ = require('underscore'),
-  lastGet = new Date(2000,1,1),
-  cache = undefined;
-
 exports.index = function(req, res){
-  res.render('index', getGists() );
+  res.render('index', getIndexModel(gistListUrl, gistsToViewModel) );
 };
 
 exports.about = function(req, res) {
-	res.render('abouts/index', {})
+	res.render('abouts/index', { title: 'About' })
 };
 
-function getGists() {
 
-	var age = (new Date() - lastGet) / 60000;
+function getIndexModel(gistListUrl, transform) {
 
-	console.log(age);
+	console.log('loading gists from %s', gistListUrl);
 
-	if (age > 5) {
-		loadGistCache();
-	} 
 
-	return makeGistsModel();
-};
-
-function loadGistCache() {
-
-	var gistListUrl = 'https://api.github.com/users/adamchester/gists';
-	
-	console.log('refreshing cache');
+	if (viewModelCache === undefined) {
+		console.log("no gists loaded yet, setting empty viewModelCache");
+		viewModelCache = { gists: makeEmptyGistsModel() };
+	}
 
 	request({ url: gistListUrl, json: true }, function (error, response, body) {
-	  console.log('got response from github');
 
-	  if (!error && response.statusCode == 200) {
-	  	console.log('setting cache');
+		console.log('got response from %s', gistListUrl);
 
-	    cache = _.chain(body)
-	    		.filter(isBlogGist)
-	          	.map(toViewModel)
-	          	.sortBy(date)
-	          	.value().reverse();
-
-	    lastGet = new Date();
-	    
-	    return cache;
-	  } else {
-	    console.log("LOG: failed to get gists from github. Using cache.");
-	    return cache;
-	  }
+		if (!error && response.statusCode == 200) {
+			viewModelCache = transform(body);
+			lastGet = new Date();
+			console.log("updated viewModelCache at %s", lastGet.toLocaleString());
+		} else {
+			console.log("failed to get gists from %s. Using existing viewModelCache.", gistListUrl);
+		}
 	});
+
+	return viewModelCache;
+};
+
+function gistsToViewModel(gists) {
+	return { 
+		gists: _.chain(gists).filter(isBlogGist).map(toViewModel).sortBy(date).value().reverse()
+	};
 };
 
 function makeEmptyGistsModel() { 
 	return [
-		{ url: 'http://loading.com/', comments: 0, description: 'Gists are being loaded, refresh the page' },
+		{ url: adamchesterUrl, created_at: new Date(), comments: 0, description: 'Gists are being loaded, refresh the page' },
 	];
-};
-
-function makeGistsModel() {
-	// TODO: fix this 
-	if (cache === undefined)
-		return { gists: makeEmptyGistsModel() };
-
-	return { gists: cache };
 };
 
 function isBlogGist(gist) {
