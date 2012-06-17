@@ -3,6 +3,9 @@
 
 <div class="page-header well">
 	<h1><a href=<%= gist.url %>><%= gist.description %></a></h1>
+	<p>
+	<script src="<%= gist.url + '.js' %>"></script>
+	</p>
 	<span class="label label-info"><i class="icon-time icon-white"></i><%= gist.created_at.toDateString() %></span>
 	<span class="label label-info"><i class="icon-comment icon-white"></i><%= gist.comments %> comments</span>
 </div>
