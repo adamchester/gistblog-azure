@@ -18,8 +18,7 @@ exports.about = function(req, res) {
 
 function getGists() {
 
-	var gistListUrl = 'https://api.github.com/users/adamchester/gists',
-	  age = (new Date() - lastGet) / 60000;
+	var age = (new Date() - lastGet) / 60000;
 
 	console.log(age);
 
@@ -32,6 +31,8 @@ function getGists() {
 
 function loadGistCache() {
 
+	var gistListUrl = 'https://api.github.com/users/adamchester/gists';
+	
 	console.log('refreshing cache');
 
 	request({ url: gistListUrl, json: true }, function (error, response, body) {
