@@ -2,30 +2,39 @@
 
 var request = require('request')
 	,  _ = require('underscore')
+	, md = require("node-markdown").Markdown
 	, lastGet = new Date(2000,1,1)
 	, gistListUrl = 'https://api.github.com/users/adamchester/gists'
 	, adamchesterUrl = 'https://gist.github.com/adamchester'
 	, viewModelCache = undefined;
 
 /*
- * GET home page.
+ * GET /about page.
  */
-exports.index = function(req, res){
-  res.render('index', getIndexModel(gistListUrl, gistsToViewModel) );
-};
-
 exports.about = function(req, res) {
 	res.render('abouts/index', { title: 'About' })
 };
 
+/*
+ * GET home page.
+ */
+exports.index = function(req, res){
 
-function getIndexModel(url, transform) {
+  getIndexModel(gistListUrl, gistsToViewModel, function() {
+  	res.render('index', viewModelCache);
+  });
+};
+
+
+var getIndexModel = function(url, transform, callback) {
 
 	var age = (new Date() - lastGet) / 60000;
 	console.log('gist cache age %d', age);
 
+	// TODO: need a better way to refresh cache asynchronously ?
+
 	if (age > 5) {
-		console.log('loading gists from %s', url);
+		console.log('(re)loading gists from %s', url);
 
 		request({ url: url, json: true }, function (error, response, body) {
 
@@ -38,30 +47,51 @@ function getIndexModel(url, transform) {
 			} else {
 				console.log("failed to get gists from %s. Using existing viewModelCache.", url);
 			}
+
+			// ensure we always have a view model after app restart
+			if (viewModelCache === undefined) {
+				viewModelCache = makeEmptyGistsModel();
+			}
+
+			callback();
 		});
 	}
-
-	if (viewModelCache === undefined) {
-		console.log("no gists loaded yet, setting empty viewModelCache");
-		viewModelCache = { gists: makeEmptyGistsModel() };
+	else
+	{
+		// cached viewmodel has *not* expired
+		callback();
 	}
-
-	return viewModelCache;
 };
 
-function gistsToViewModel(gists) {
+var toViewModel = function(gist) {
+	return { 
+		markdown: 'todo', // TODO: get markdown contents from github and put here?
+	  	id: gist.id,
+	  	description: gist.description, 
+	  	created_at: new Date(gist.created_at), 
+	  	url: 'https://gist.github.com/' + gist.id,
+	  	comments: gist.comments
+	};
+
+}
+
+function date(gist) {
+	return gist.created_at;
+}
+
+var gistsToViewModel = function(gists) {
 	return { 
 		gists: _.chain(gists).filter(isBlogGist).map(toViewModel).sortBy(date).value().reverse()
 	};
 };
 
-function makeEmptyGistsModel() { 
+var makeEmptyGistsModel = function() { 
 	return [
 		{ url: adamchesterUrl, created_at: new Date(), comments: 0, description: 'Gists are being loaded, refresh the page' },
 	];
 };
 
-function isBlogGist(gist) {
+var isBlogGist = function(gist) {
 	var fileName = gist.files[_(gist.files).keys()[0]].filename;
 	return /blog_.+\.md/.test(fileName);
 } 
@@ -99,16 +129,18 @@ function isBlogGist(gist) {
 ]
 */
 
-function toViewModel(gist) {
-	return { 
-	  id: gist.id,
-	  description: gist.description, 
-	  created_at: new Date(gist.created_at),
-	  url: 'https://gist.github.com/' + gist.id,
-	  comments: gist.comments
-	};
-}
+var requestJsonWithCallback = function(url, callback) {
 
-function date(gist) {
-	return gist.created_at;
+	request({ url: url, json: true }, function (error, response, body) {
+
+		console.log('got response from %s', url);
+
+		if (!error && response.statusCode == 200) {
+			// success
+		} else {
+			console.log("failed to get data from %s.", url);
+		}
+
+		callback(error, response, body);
+	});
 }

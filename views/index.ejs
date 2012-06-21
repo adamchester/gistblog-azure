@@ -2,11 +2,14 @@
 <% for (var i = 0; i < gists.length; i++) { var gist = gists[i]; %>
 
 <div class="page-header well">
-	<h1><a href=<%= gist.url %>><%= gist.description %></a></h1>
+	<h1><a href='<%= gist.url %>'><%= gist.description %></a></h1>
+
+	<div class="post-flags">
 	<span class="label label-info left">
 		<i class="icon-time icon-white"></i>
 		<%= gist.created_at.toDateString() %>
 	</span>
+	&nbsp;
 	<a href="<%= gist.url + '#comments' %>">
 		<span class="label label-info left">
 			<i class="icon-comment icon-white"></i>
