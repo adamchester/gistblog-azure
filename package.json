@@ -1,12 +1,23 @@
 {
-    "name": "rarelyupdated"
+  "name": "rarelyupdated"
+  , "description": "A blog engine, based on github gists, rarely updated"
   , "version": "0.0.1"
   , "private": true
+  
   , "dependencies": {
-      "express": "2.5.10"
-    , "ejs": ">= 0.0.1"
+
+    "express": "2.5.10"
+    , "ejs": "*"
     , "request": ">= 2.9.202"
     , "underscore": ">= 1.3.3"
     , "node-markdown": ">= 0.1.0"
   }
+
+  , "devDependencies": {
+    "assert": "*"
+    , "coffee-script": "*"
+  }
+
+  , "engine": "node >= 0.4.1"
+
 }

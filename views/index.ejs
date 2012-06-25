@@ -3,23 +3,27 @@
 
 <div class="page-header well">
 	<h1><a href='<%= gist.url %>'><%= gist.description %></a></h1>
+	<p />
 
 	<div class="post-flags">
-	<span class="label label-info left">
-		<i class="icon-time icon-white"></i>
-		<%= gist.created_at.toDateString() %>
-	</span>
-	&nbsp;
-	<a href="<%= gist.url + '#comments' %>">
 		<span class="label label-info left">
-			<i class="icon-comment icon-white"></i>
-			<%= gist.comments %> comments</a>
+			<i class="icon-time icon-white"></i>
+			<%= gist.created_at.toDateString() %>
 		</span>
-	</a>
+		&nbsp;
+		<a href="<%= gist.url + '#comments' %>">
+			<span class="label label-info left">
+				<i class="icon-comment icon-white"></i>
+				<%= gist.comments %> comments
+			</span>
+		</a>
+	</div>
+
 	<p class="blog-post">
+		<%= gist.html %>
 		<script src="<%= gist.url + '.js' %>"></script>
 	</p>
-	</p>
+
 </div>
 
 <% } %>

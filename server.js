@@ -1,16 +1,18 @@
-
+// 
 /**
  * Module dependencies.
  */
 
-var express = require('express')
-  , routes = require('./routes');
-
+var express = require('express');
 var app = module.exports = express.createServer();
 var port = process.env.port || 3000;
 
-// Configuration
+var routes = {
+  Posts: require('./routes/posts.js').Posts
+  , About: require('./routes/about.js').About
+};
 
+// Configuration
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -32,8 +34,8 @@ app.configure('production', function(){
 
 // Routes
 
-app.get('/', routes.index);
-app.get('/about', routes.about);
+app.get('/about', routes.About.index);
+app.get('/', routes.Posts.index);
 
 console.log("attempting to listen on port %d", port);
 
